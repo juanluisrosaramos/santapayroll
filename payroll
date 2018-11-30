@@ -1,0 +1,95 @@
+#! /usr/bin/python3
+import argparse
+from datetime import date,datetime
+import csv
+import json
+from json import JSONEncoder
+import collections
+
+penny = 0.01
+nickel = 0.05
+dime = 0.10
+quarter = 0.25
+dollar_1 = 1.00
+dollar_5 = 5.00
+dollar_10 = 10.00
+dollar_20 = 20.00
+dollar_100 = 100.00
+change_types = collections.OrderedDict([(dollar_100,0),(dollar_20,0),(dollar_10,0),(dollar_5,0),(dollar_1,0),
+                (quarter,0),(dime,0),(nickel,0),(penny,0)])
+
+def read_csv(file):
+    with open(file, mode='r') as f:
+        csv_reader = csv.reader(f, delimiter=',')
+        results=[]
+        for row in csv_reader:
+            results.append(row)
+    return results
+
+def calculate_cash(amount):
+    #The ordered dictionary of denominations is updated for each Jar
+    for change_type in change_types:
+        numAmount = max(0,amount//change_type)
+        amount-=numAmount*change_type
+        amount = round(amount,2)
+        change_types[change_type] += int(numAmount)
+
+class elf:
+    def __init__(self, name, birthday):
+        self.name = name
+        self.payment_date = datetime.strptime(results.payroll_date,'%Y-%m-%d')
+        self.age = self.calculate_age(birthday)
+        self.salary = round((self.age * 52)/12)
+        self.divide_salary()
+
+    def calculate_age(self,birthday):
+        #Returns elf's age (giving his birthday)
+        born=datetime.strptime(birthday,'%Y-%m-%d')
+        return self.payment_date.year - born.year - ((self.payment_date.month,
+         self.payment_date.day) < (born.month, born.day))
+
+    def divide_salary(self):
+        #Giving Elf pay we divide it in the three jars and compute the cash necessary for each Elf's jar
+        salary = self.salary
+        self.charity_jar  = (10 * salary ) / 100
+        #Let's compute the cash necessary for fulfill this Jar
+        calculate_cash(self.charity_jar)
+        salary -= self.charity_jar
+        self.retirement_jar = (40 * salary ) / 100
+        #Let's compute the cash necessary for fulfill this Jar
+        calculate_cash(self.retirement_jar)
+        salary -= self.retirement_jar
+        self.candy_jar = round(salary,2)
+        #Let's compute the cash necessary for fulfill this Jar
+        calculate_cash(self.candy_jar)
+
+def json_default(value):
+        if isinstance(value, datetime):
+            return (str(value.date()))
+        else:
+            return value.__dict__
+
+if __name__ == '__main__':
+    #Date: if no date is given calculations are made from today
+    parser = argparse.ArgumentParser(description='This is Santa payroll program calculator')
+    parser.add_argument('file')
+    parser.add_argument('-d', action='store', default=str(date.today()),
+                        dest='payroll_date',
+                        help='If you provide data the format must be [-d YYYY-MM-DD]')
+    results = parser.parse_args()
+    
+
+    elves = read_csv(results.file)
+    elves_salaries = []
+    for e in elves:
+        if len(e)==2:
+            elf_name,elf_birthday=e
+            elves_salaries.append(elf(elf_name,elf_birthday))
+
+    elves = json.dumps(['Payroll per elf',elves_salaries], cls=JSONEncoder,
+    separators=(',', ':'), indent=4,  sort_keys=False, default=json_default)
+    change = json.dumps(['Bank bills and coins',change_types], cls=JSONEncoder,
+    separators=(',', ':'), indent=4,  sort_keys=False, default=json_default)
+    print (elves)
+    print (change)
+

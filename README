@@ -1,0 +1,6 @@
+#Example of use
+
+chmod +x payroll
+./payroll elves.csv -d 2045-02-25
+
+
